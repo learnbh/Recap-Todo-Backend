@@ -30,6 +30,14 @@ public class TodoControllerTest {
     ObjectMapper objectMapper = new ObjectMapper();
 
     @Test
+    void getAllTodos_shouldHandleUnknownError() throws Exception{
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/trigger-error"))
+                .andExpect(MockMvcResultMatchers.status().isInternalServerError())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.message").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.timestamp").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.status").value(500));
+    }
+    @Test
     void test_getAllTodos_shouldReturnEmptyList_Initialy() throws Exception{
         mockMvc.perform(MockMvcRequestBuilders.get("/api/todo"))
                 .andExpect(MockMvcResultMatchers.status().isOk())
