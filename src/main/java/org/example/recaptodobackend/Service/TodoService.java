@@ -13,10 +13,12 @@ public class TodoService {
 
     private final TodoRepro todoRepro;
     private final IdService idService;
+    private final ChatGPTService chatGPTService;
 
-    public TodoService(TodoRepro todoRepro, IdService idService) {
+    public TodoService(TodoRepro todoRepro, IdService idService, ChatGPTService chatGPTService) {
         this.todoRepro = todoRepro;
         this.idService = idService;
+        this.chatGPTService = chatGPTService;
     }
 
     public List<TodoDto> getAllTodos() {
@@ -31,6 +33,8 @@ public class TodoService {
     }
 
     public TodoDto addTodo(TodoDto todoDto) {
+        String chatGptResponse = chatGPTService.checkText(todoDto.description());
+       // if
         todoRepro.save( new Todo(
                 idService.createId(),
                 todoDto.description(),

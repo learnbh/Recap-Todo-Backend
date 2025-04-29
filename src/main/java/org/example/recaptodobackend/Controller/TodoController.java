@@ -3,6 +3,7 @@ package org.example.recaptodobackend.Controller;
 import org.example.recaptodobackend.Exception.TodoNotFoundException;
 import org.example.recaptodobackend.Models.Dtos.TodoDto;
 import org.example.recaptodobackend.Models.Todo;
+import org.example.recaptodobackend.Service.ChatGPTService;
 import org.example.recaptodobackend.Service.TodoService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

@@ -16,6 +16,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class TodoServiceTest {
 
     IdService mockIdService;
+    ChatGPTService mockChatGPTService;
     TodoService mockTodoService;
     TodoRepro mockTodoRepro;
 
@@ -33,8 +34,9 @@ class TodoServiceTest {
 
         mockIdService = mock(IdService.class);
         mockTodoRepro = mock(TodoRepro.class);
+        mockChatGPTService = mock(ChatGPTService.class);
 
-        mockTodoService = new TodoService(mockTodoRepro, mockIdService);
+        mockTodoService = new TodoService(mockTodoRepro, mockIdService, mockChatGPTService);
     }
     @Test
     void getAllTodos_shouldReturnEmptyList_Initialy() {
@@ -43,7 +45,6 @@ class TodoServiceTest {
     @Test
     void getAllTodos_shouldReturnListOfTwo(){
         // Given
-        mockTodoService = new TodoService(mockTodoRepro, mockIdService);
         when(mockTodoRepro.findAll()).thenReturn(List.of(todo1, todo2));
         List<TodoDto> expected = List.of(todoDto1, todoDto2);
         // When
@@ -55,7 +56,6 @@ class TodoServiceTest {
     @Test
     void getTodoById_shouldReturnTodoDtoOptional_forTodoWithId1() {
         // Given
-        mockTodoService = new TodoService(mockTodoRepro, mockIdService);
         Optional<Todo> expected = Optional.of(todo1);
         when(mockTodoRepro.findById(todo1.id())).thenReturn(expected);
         // When
@@ -66,7 +66,6 @@ class TodoServiceTest {
     }
     @Test
     void getTodoById_shouldReturnEmptyOptional_forInvalidId(){
-        mockTodoService = new TodoService(mockTodoRepro, mockIdService);
         // Then
         assertEquals(Optional.empty(), mockTodoService.getTodoById("idExistNot"));
         verify(mockTodoRepro, times(1)).findById("idExistNot");
