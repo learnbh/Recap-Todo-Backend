@@ -83,7 +83,7 @@ class TodoServiceTest {
         verify(mockTodoRepro, times(1)).save(todo1);
     }
     @Test
-    void updateTodo_shouldReturnReturnEmptyOptional_forInvalidId() {
+    void updateTodo_shouldReturnEmptyOptional_forInvalidId() {
         // Given
         TodoDto updateTodoData = new TodoDto(todo1.description(), TodoStatus.CANCELLED);
         // When
@@ -92,7 +92,7 @@ class TodoServiceTest {
         assertEquals(Optional.empty(), actual);
     }
     @Test
-    void updateTodo_shouldReturnReturnOptionalTodoDto_forValidId() {
+    void updateTodo_shouldReturnOptionalTodoDto_forValidId() {
         // Given
         TodoDto updateTodoData = new TodoDto(todo1.description(), TodoStatus.CANCELLED);
         when(mockTodoRepro.findById(todo1.id())).thenReturn(Optional.of(todo1));
