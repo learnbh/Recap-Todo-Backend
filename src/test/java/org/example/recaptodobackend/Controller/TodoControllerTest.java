@@ -9,13 +9,16 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@DirtiesContext
 public class TodoControllerTest {
     @Autowired
     private MockMvc mockMvc;
@@ -35,7 +38,7 @@ public class TodoControllerTest {
                 .andExpect(MockMvcResultMatchers.status().isInternalServerError())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.message").exists())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.timestamp").exists())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.status").value(500));
+                .andExpect(MockMvcResultMatchers.jsonPath("$.status").value(HttpStatus.INTERNAL_SERVER_ERROR.name()));
     }
     @Test
     void test_getAllTodos_shouldReturnEmptyList_Initialy() throws Exception{
@@ -44,6 +47,7 @@ public class TodoControllerTest {
                 .andExpect(MockMvcResultMatchers.content().json("[]"));
     }
     @Test
+    @DirtiesContext
     void test_getAllTodos_shouldReturnListOfTwo() throws Exception{
         mockTodoRepro.save(todo1);
         mockTodoRepro.save(todo2);
@@ -66,7 +70,8 @@ public class TodoControllerTest {
                 ));
     }
     @Test
-    void test_getTodoById_shouldReturnTodoDto_ForId1() throws Exception{
+    @DirtiesContext
+    void test_getTodoById_shouldReturnTodoDto1_ForId1() throws Exception{
         // Given
         mockTodoRepro.save(todo1);
         mockTodoRepro.save(todo2);
@@ -77,11 +82,12 @@ public class TodoControllerTest {
                 .andExpect(MockMvcResultMatchers.content().json(objectMapper.writeValueAsString(todoDto1)));
     }
     @Test
-    void test_getTodoById_shouldReturnTodoNotFoundException_ForIdNotExist() throws Exception{
+    void test_getTodoById_shouldReturnIdNotFoundException_ForIdNotExist() throws Exception{
         mockMvc.perform(MockMvcRequestBuilders.get("/api/todo/IdNotExist"))
                 .andExpect(MockMvcResultMatchers.status().isNotFound())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.message")
-                        .value("Todo with id IdNotExist could not be found!"));
+                .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Error: Todo with id IdNotExist could not be found!"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.timestamp").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.status").value(HttpStatus.NOT_FOUND.name()));
     }
     @Test
     void test_addTodo_shouldReturnTrue() throws Exception{
@@ -92,7 +98,7 @@ public class TodoControllerTest {
                 .andExpect(MockMvcResultMatchers.content().json(objectMapper.writeValueAsString(todoDto1)));
     }
     @Test
-    void test_updateTodo_shouldReturnTodoNotFoundException_ForIdNotExist() throws Exception{
+    void test_updateTodo_shouldReturnIdNotFoundException_ForIdNotExist() throws Exception{
         // Given
         TodoDto updateTodoData = new TodoDto(todo1.description(), TodoStatus.CANCELLED);
         mockMvc.perform(MockMvcRequestBuilders.put("/api/todo/IdNotExist", updateTodoData)
@@ -100,7 +106,25 @@ public class TodoControllerTest {
                 .content(objectMapper.writeValueAsString(updateTodoData)))
                 .andExpect(MockMvcResultMatchers.status().isNotFound())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.message")
-                        .value("Todo with id IdNotExist could not be found!"));
+                        .value("Error: Todo with id IdNotExist could not be found!"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.timestamp").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.status").value(HttpStatus.NOT_FOUND.name()));
+    }
+    @Test
+    void test_deleteTodo_shouldReturnEmptyList_ifTodoNotExist() throws Exception{
+        // Given
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/todo"))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.content().json("[]"));
+        // When
+        mockMvc.perform(MockMvcRequestBuilders.delete("/api/todo/"+todo1.id()))
+        // Then
+                .andExpect(MockMvcResultMatchers.status().isOk());
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/todo"))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.content().json("[]"));
+
     }
     @Test
     void test_deleteTodo_shouldReturnEmptyList_afterDeletingTodo() throws Exception{
@@ -118,7 +142,7 @@ public class TodoControllerTest {
                    """));
         // When
         mockMvc.perform(MockMvcRequestBuilders.delete("/api/todo/"+todo1.id()))
-        // Then
+                // Then
                 .andExpect(MockMvcResultMatchers.status().isOk());
 
         mockMvc.perform(MockMvcRequestBuilders.get("/api/todo"))
